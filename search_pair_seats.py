@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
+import send_messages
 
 
 chrome_options = webdriver.ChromeOptions()
@@ -41,6 +42,8 @@ while True:
     rows_with_available_seats = wait.until(EC.presence_of_all_elements_located(consts.ROWS_WITH_AVAILABLE_SEATS_LOCATOR))
     print(f"נמצאו {len(rows_with_available_seats)} שורות עם מושבים פנויים")
 
+    pair_seats = 0
+
     there_is_a_seat = False
     for row in rows_with_available_seats:
         all_seats = row.find_elements(By.XPATH, consts.SEAT_XPATH)
@@ -48,12 +51,20 @@ while True:
         for seat in all_seats:
             if consts.COLOR_SEAT in seat.get_attribute("innerHTML"):
                 if there_is_a_seat:
+                    pair_seats += 1
                     print("נמצאו זוג מושבים סמוכים פנויים!!!!!")
                 else:
                     print("נמצא מושב בודד פנוי")
                     there_is_a_seat = True
             elif there_is_a_seat:
                 there_is_a_seat = False
+
+    if pair_seats > 0:
+        print(f"נמצאו {pair_seats} זוג מושבים סמוכים פנויים!!!!!")
+        send_messages.send_message(f"נמצאו {pair_seats} זוגות מושבים סמוכים פנויים!!!!!")
+    else:
+        print("לא נמצאו מושבים זוגיים")
+        send_messages.send_message("לא נמצאו מושבים זוגיים")
 
     driver.close()
     driver.quit()
